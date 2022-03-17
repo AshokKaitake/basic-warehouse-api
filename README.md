@@ -2,11 +2,13 @@
 Basic Warehouse REST API's to manipulate inventory of the warehouse
 
 ### Assignment details
-The assignment is to implement a warehouse software. This software should hold articles, and the articles should contain an identification number, a name and available stock. It should be possible to load articles into the software from a file, see the attached inventory.json.
-The warehouse software should also have products, products are made of different articles. Products should have a name, price and a list of articles of which they are made from with a quantity. The products should also be loaded from a file, see the attached products.json.
+The assignment is to implement a warehouse software. This software should hold articles, and the articles should contain an identification number, a name and available stock.
+It should be possible to load articles into the software from a file, see the attached inventory.json.
+The warehouse software should also have products, products are made of different articles. Products should have a name, price and a list of articles of which they are made from with a quantity.
+The products should also be loaded from a file, see the attached products.json.
 
 The warehouse should have at least the following functionality;
-* Get all products and quantity of each that is available with the current inventory
+* Get all products and quantity of each that is an available with the current inventory
 * Remove(Sell) a product and update the inventory accordingly
 
 ### Approach
@@ -44,3 +46,212 @@ Things to follow for migration scripts:
    - Example, `V1.0.0__initial_script.sql`
 - Once migration script is applied you should not change anything in existing script. _If you do so, it will throw an error_.
 - Create new migration file with different version number for any further DB operations.
+
+### API Details
+#### 1. `GET /api/v1/articles` _Get all articles from inventory_
+
+
+######Request
+```curl
+curl http://localhost:8080/api/v1/articles
+```
+######Response
+```
+{
+    "responseCode": 200,
+    "responseMessage": "Record found successfully",
+    "responseData": [
+        {
+            "name": "leg",
+            "stock": 12,
+            "art_id": "1"
+        },
+        {
+            "name": "screw",
+            "stock": 17,
+            "art_id": "2"
+        },
+        {
+            "name": "seat",
+            "stock": 2,
+            "art_id": "3"
+        },
+        {
+            "name": "table top",
+            "stock": 1,
+            "art_id": "4"
+        }
+    ]
+}
+```
+#### 2. `GET /api/v1/products` _Get all products_
+######Request
+```curl
+curl http://localhost:8080/api/v1/products
+```
+######Response
+```
+{
+    "responseCode": 200,
+    "responseMessage": "Record found successfully",
+    "responseData": [
+        {
+            "name": "Dining Chair",
+            "contain_articles": [
+                {
+                    "art_id": "1",
+                    "amount_of": 4
+                },
+                {
+                    "art_id": "2",
+                    "amount_of": 8
+                },
+                {
+                    "art_id": "3",
+                    "amount_of": 1
+                }
+            ]
+        },
+        {
+            "name": "Dinning Table",
+            "contain_articles": [
+                {
+                    "art_id": "1",
+                    "amount_of": 4
+                },
+                {
+                    "art_id": "2",
+                    "amount_of": 8
+                },
+                {
+                    "art_id": "4",
+                    "amount_of": 1
+                }
+            ]
+        }
+    ]
+}
+```
+#### 3. `GET /api/v1/available/products` _Get all products and quantity of each that is an available with the current inventory_
+######Request
+```curl
+curl http://localhost:8080/api/v1/available/products
+```
+######Response
+```
+{
+    "responseCode": 200,
+    "responseMessage": "Record found successfully",
+    "responseData": [
+        {
+            "name": "Dining Chair",
+            "isAvailable": true,
+            "quantityInStock": 2,
+            "contain_articles": [
+                {
+                    "stock": 12,
+                    "art_id": "1",
+                    "amount_of": 4
+                },
+                {
+                    "stock": 17,
+                    "art_id": "2",
+                    "amount_of": 8
+                },
+                {
+                    "stock": 2,
+                    "art_id": "3",
+                    "amount_of": 1
+                }
+            ]
+        },
+        {
+            "name": "Dinning Table",
+            "isAvailable": true,
+            "quantityInStock": 1,
+            "contain_articles": [
+                {
+                    "stock": 12,
+                    "art_id": "1",
+                    "amount_of": 4
+                },
+                {
+                    "stock": 17,
+                    "art_id": "2",
+                    "amount_of": 8
+                },
+                {
+                    "stock": 1,
+                    "art_id": "4",
+                    "amount_of": 1
+                }
+            ]
+        }
+    ]
+}
+```
+#### 4. `DELETE /api/v1/sell/product` _Remove(Sell) a product and update the inventory accordingly_
+######Request
+```curl
+curl --location --request DELETE 'http://localhost:8080/api/v1/sell/product?productName=Dinning Table'
+```
+######Response
+```
+{
+    "responseCode": 200,
+    "responseMessage": "Product has been sold",
+    "responseData": {
+        "name": "Dinning Table",
+        "contain_articles": [
+            {
+                "art_id": "1",
+                "amount_of": 4
+            },
+            {
+                "art_id": "2",
+                "amount_of": 8
+            },
+            {
+                "art_id": "4",
+                "amount_of": 1
+            }
+        ]
+    }
+}
+```
+#### 5.`POST /api/v1/import/inventoryfile` _import articles from inventory json file_
+
+######Request
+```curl
+curl --location --request POST 'http://localhost:8080/api/v1/import/inventoryfile' --form 'file=@"<filepath>/inventory.json";type=application/json'
+```
+> Kindly change file path as per file location
+######Response
+```
+{
+    "responseCode": 200,
+    "responseMessage": "Record successfully imported",
+    "responseData": [
+        {
+            "name": "leg",
+            "stock": 12,
+            "art_id": "1"
+        },
+        {
+            "name": "screw",
+            "stock": 17,
+            "art_id": "2"
+        },
+        {
+            "name": "seat",
+            "stock": 2,
+            "art_id": "3"
+        },
+        {
+            "name": "table top",
+            "stock": 1,
+            "art_id": "4"
+        }
+    ]
+}
+```
