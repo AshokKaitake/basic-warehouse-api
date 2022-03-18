@@ -47,3 +47,5 @@ CREATE TABLE IF NOT EXISTS public.product_article_mapping
         ON DELETE NO ACTION
         NOT VALID
 );
+INSERT INTO public.article(art_id, name, stock) VALUES ('10', 'article_10', 10);
+INSERT INTO public.product(id, name) VALUES (100, 'productName_100');
